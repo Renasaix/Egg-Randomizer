@@ -17,14 +17,13 @@ local eggs = {
     ["🌴 Paradise Egg"] = {"Ostrich", "Peacock", "Capybara", "Scarlet Macaw", "Mimic Octopus"},
     ["🌼 Oasis Egg"] = {"Meerkat", "Sand Snake", "Axolotl", "Hyacinth Macaw", "Fennec Fox"},
     ["🐝 Bee Egg"] = {"Bee", "Drone Bee", "Queen Bee"},
-    ["🔥 Mythical Summer Egg"] = {"Red Fox", "Golden Deer", "Mimic Octopus"},
     ["🌙 Night Egg"] = {"Bat", "Night Owl", "Moth", "Raccoon"},
     ["🚫🐝 Anti-Bee Egg"] = {"Dust Bee", "Angry Bee", "Robot Bee", "Disco Bee"}
 }
 
 local rarePets = {
     ["🦊 Mythical Egg"] = "Red Fox",
-    ["🔥 Mythical Summer Egg"] = "Mimic Octopus",
+    ["🔥 Paradise Egg"] = "Mimic Octopus",
     ["🐛 Bug Egg"] = "Dragonfly",
     ["🌼 Oasis Egg"] = "Fennec Fox",
     ["🐝 Bee Egg"] = "Queen Bee",
