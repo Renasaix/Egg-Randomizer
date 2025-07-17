@@ -10,7 +10,7 @@ for _, egg in pairs(workspace:GetDescendants()) do
 
 			local textLabel = Instance.new("TextLabel")
 			textLabel.Size = UDim2.new(1, 0, 1, 0)
-			textLabel.Text = "ESP TEST"
+			textLabel.Text = "Common Egg"
 			textLabel.BackgroundTransparency = 1
 			textLabel.TextColor3 = Color3.new(1, 1, 1)
 			textLabel.TextScaled = true
