@@ -1,4 +1,5 @@
-local eggs = {
+-- Define all egg types and their pets
+local eggPets = {
     ["🥚 Common Egg"] = {"Dog", "Bunny", "Golden Lab"},
     ["🥕 Uncommon Egg"] = {"Black Bunny", "Chicken", "Cat", "Deer"},
     ["💎 Rare Egg"] = {"Orange Tabby", "Spotted Deer", "Pig", "Monkey"},
@@ -16,59 +17,53 @@ local eggs = {
     ["🧬 Primal Egg"] = {"Parasaurolophus", "Iguanodon", "Pachycephalosaurus", "Dilophosaurus", "Ankylosaurus", "Spinosaurus"}
 }
 
-local function getPetListFromName(name)
-    for eggName, petList in pairs(eggs) do
-        if name:lower():find(eggName:match("[%w%s]+"):lower()) then
-            return petList
-        end
-    end
-    return nil
-end
+-- Detect and apply ESP
+local function addESPToEgg(eggModel, petList)
+    local part = eggModel:FindFirstChild("Egg Part") or eggModel:FindFirstChildWhichIsA("BasePart")
+    if not part or part:FindFirstChild("PetESP") then return end
 
-local function addESP(model, petList)
-    local part = model:FindFirstChildWhichIsA("BasePart", true)
-    if not part then return end
-
-    if part:FindFirstChild("PetESP") then return end -- Prevent duplicates
-
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "PetESP"
-    billboard.Adornee = part
-    billboard.Size = UDim2.new(0, 200, 0, 50)
-    billboard.StudsOffset = Vector3.new(0, 3, 0)
-    billboard.AlwaysOnTop = true
-    billboard.Parent = part
+    local gui = Instance.new("BillboardGui")
+    gui.Name = "PetESP"
+    gui.Adornee = part
+    gui.Size = UDim2.new(0, 200, 0, 50)
+    gui.StudsOffset = Vector3.new(0, 3, 0)
+    gui.AlwaysOnTop = true
+    gui.Parent = part
 
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, 0, 1, 0)
     label.BackgroundTransparency = 1
     label.TextColor3 = Color3.new(1, 1, 1)
-    label.TextStrokeColor3 = Color3.new(0, 0, 0)
     label.TextStrokeTransparency = 0
+    label.TextStrokeColor3 = Color3.new(0, 0, 0)
     label.TextScaled = true
     label.Font = Enum.Font.GothamBold
-    label.Parent = billboard
+    label.Text = "🎲 Spawning..."
+    label.Parent = gui
 
-    -- Start pet name randomizer
+    -- Countdown + randomizer
     spawn(function()
-        while true do
-            if petList and #petList > 0 then
-                local randomPet = petList[math.random(1, #petList)]
-                label.Text = "🎲 " .. randomPet
-            else
-                label.Text = "Unknown Egg"
+        local timer = 15
+        while gui.Parent do
+            if timer <= 0 then
+                timer = 15
             end
-            wait(10)
+            local pet = petList[math.random(1, #petList)]
+            label.Text = eggModel.Name .. "\n🎲 " .. pet .. " (" .. timer .. "s)"
+            wait(1)
+            timer -= 1
         end
     end)
 end
 
--- Scan all models in the workspace for eggs
-for _, descendant in ipairs(workspace:GetDescendants()) do
-    if descendant:IsA("Model") and descendant.Name:lower():find("egg") then
-        local petList = getPetListFromName(descendant.Name)
-        if petList then
-            addESP(descendant, petList)
+-- Search through workspace for egg models
+for _, obj in ipairs(workspace:GetDescendants()) do
+    if obj:IsA("Model") then
+        for eggName, pets in pairs(eggPets) do
+            if string.find(obj.Name, eggName) then
+                addESPToEgg(obj, pets)
+                break
+            end
         end
     end
 end
