@@ -1,49 +1,64 @@
---=== DEBUG EGG ESP ===
-local function debug(msg) 
-    print("[DEBUG EggESP] " .. tostring(msg)) 
+-- List of eggs with sample pets
+local eggPets = {
+    ["🥚 Common Egg"] = {"Dog", "Bunny", "Golden Lab"},
+}
+
+-- Function to pick random pet name every 10s
+local function startESP(eggModel, petNames)
+    local eggPart = eggModel:FindFirstChild("Egg Part", true)
+    if not eggPart then 
+        warn("❌ No 'Egg Part' found in: " .. eggModel:GetFullName()) 
+        return 
+    end
+
+    -- Create Billboard GUI
+    local gui = Instance.new("BillboardGui")
+    gui.Name = "EggESP"
+    gui.Adornee = eggPart
+    gui.Size = UDim2.new(0, 200, 0, 50)
+    gui.StudsOffset = Vector3.new(0, 3, 0)
+    gui.AlwaysOnTop = true
+    gui.Parent = eggPart
+
+    -- Create text label
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextScaled = true
+    label.Text = "🥚 " .. eggModel.Name
+    label.Parent = gui
+
+    -- Randomize pet name every 10s and reset timer at 15s
+    local counter = 0
+    task.spawn(function()
+        while gui.Parent do
+            wait(1)
+            counter += 1
+            if counter % 10 == 0 then
+                local pet = petNames[math.random(1, #petNames)]
+                label.Text = "🥚 " .. pet
+            end
+            if counter >= 15 then
+                counter = 0
+            end
+        end
+    end)
 end
 
--- Locate the correct parent folder
-local folder = workspace
-    :FindFirstChild("Farm")
-    and workspace.Farm:FindFirstChild("Farm")
-    and workspace.Farm.Farm:FindFirstChild("Important")
-    and workspace.Farm.Farm.Important:FindFirstChild("Objects_Physical")
-
-debug("Eggs root folder: " .. tostring(folder))
-
-if not folder then
-    return debug("❌ Could not find the 'Objects_Physical' path.")
-end
-
--- Search for BaseParts named "PetEgg"
-for _, obj in ipairs(folder:GetDescendants()) do
-    if obj:IsA("BasePart") then
-        debug("Found BasePart: " .. obj:GetFullName())
-        if obj.Name == "PetEgg" then
-            debug("✅ Found PetEgg part at: " .. obj:GetFullName())
-            local mdl = obj:FindFirstAncestorOfClass("Model")
-            debug("Ancestor model: " .. tostring(mdl and mdl:GetFullName()))
-
-            -- Try building a simple test GUI
-            local gui = Instance.new("BillboardGui")
-            gui.Adornee = obj
-            gui.Size = UDim2.new(0, 100, 0, 30)
-            gui.StudsOffset = Vector3.new(0, 3, 0)
-            gui.AlwaysOnTop = true
-            gui.Parent = obj
-
-            local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1,0,1,0)
-            label.BackgroundTransparency = 1
-            label.Text = "⚙️ EGG ESP TEST"
-            label.TextColor3 = Color3.new(1,1,1)
-            label.TextScaled = true
-            label.Parent = gui
-
-            debug("► GUI created on part.")
+-- Detect eggs inside workspace.eggs
+local eggFolder = workspace:FindFirstChild("eggs")
+if not eggFolder then
+    warn("❌ workspace.eggs not found.")
+else
+    for _, model in pairs(eggFolder:GetChildren()) do
+        if model:IsA("Model") then
+            for eggName, pets in pairs(eggPets) do
+                if string.match(model.Name, "Common Egg") then
+                    print("✅ Attaching ESP to: " .. model.Name)
+                    startESP(model, pets)
+                end
+            end
         end
     end
 end
-
-debug("🔚 DEBUG END")
