@@ -1,61 +1,49 @@
--- Egg Pet Randomizer (Landscape + Interactive + Timer Boosted Rarity)
--- By: Aroa + ChatGPT Custom GUI
-
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Egg Data
+-- Eggs and pets
 local eggs = {
-    ["Common Egg"] = {"Dog", "Bunny", "Golden Lab"},
-    ["Uncommon Egg"] = {"Black Bunny", "Chicken", "Cat", "Deer"},
-    ["Rare Egg"] = {"Orange Tabby", "Spotted Deer", "Pig", "Monkey"},
-    ["Legendary Egg"] = {"Cow", "Sea Otter", "Turtle", "Polar Bear"},
-    ["Bug Egg"] = {"Snail", "Giant Ant", "Caterpillar", "Dragonfly"},
-    ["Mythical Egg"] = {"Grey Mouse", "Brown Mouse", "Squirrel", "Red Giant Ant", "Red Fox"},
-    ["Common Summer Egg"] = {"Starfish", "Seagull", "Crab"},
-    ["Rare Summer Egg"] = {"Sea Turtle", "Toucan", "Flamingo", "Seal", "Orangutan"},
-    ["Paradise Egg"] = {"Ostrich", "Peacock", "Capybara", "Scarlet Macaw", "Mimic Octopus"},
-    ["Oasis Egg"] = {"Meerkat", "Sand Snake", "Axolotl", "Hyacinth Macaw", "Fennec Fox"},
-    ["Bee Egg"] = {"Bee", "Drone Bee", "Queen Bee"},
-    ["Mythical Summer Egg"] = {"Red Fox", "Golden Deer", "Mimic Octopus"}
+    ["🥚 Common Egg"] = {"Dog", "Bunny", "Golden Lab"},
+    ["🥕 Uncommon Egg"] = {"Black Bunny", "Chicken", "Cat", "Deer"},
+    ["💎 Rare Egg"] = {"Orange Tabby", "Spotted Deer", "Pig", "Monkey"},
+    ["🌟 Legendary Egg"] = {"Cow", "Sea Otter", "Turtle", "Polar Bear"},
+    ["🐛 Bug Egg"] = {"Snail", "Giant Ant", "Caterpillar", "Dragonfly"},
+    ["🦊 Mythical Egg"] = {"Grey Mouse", "Brown Mouse", "Squirrel", "Red Giant Ant", "Red Fox"},
+    ["☀️ Common Summer Egg"] = {"Starfish", "Seagull", "Crab"},
+    ["🏝️ Rare Summer Egg"] = {"Sea Turtle", "Toucan", "Flamingo", "Seal", "Orangutan"},
+    ["🌴 Paradise Egg"] = {"Ostrich", "Peacock", "Capybara", "Scarlet Macaw", "Mimic Octopus"},
+    ["🏜️ Oasis Egg"] = {"Meerkat", "Sand Snake", "Axolotl", "Hyacinth Macaw", "Fennec Fox"},
+    ["🐝 Bee Egg"] = {"Bee", "Drone Bee", "Queen Bee"},
+    ["🔥 Mythical Summer Egg"] = {"Red Fox", "Golden Deer", "Mimic Octopus"},
+    ["🌙 Night Egg"] = {"Bat", "Night Owl", "Moth", "Raccoon"},
+    ["🚫🐝 Anti-Bee Egg"] = {"Dust Bee", "Angry Bee", "Robot Bee", "Disco Bee"}
 }
 
--- Rare pets that only appear after timer reaches threshold
+-- Rare pet requirements
 local rarePets = {
-    ["Mythical Egg"] = "Red Fox",
-    ["Mythical Summer Egg"] = "Mimic Octopus",
-    ["Bug Egg"] = "Dragonfly",
-    ["Oasis Egg"] = "Fennec Fox",
-    ["Bee Egg"] = "Queen Bee"
+    ["🦊 Mythical Egg"] = "Red Fox",
+    ["🔥 Mythical Summer Egg"] = "Mimic Octopus",
+    ["🐛 Bug Egg"] = "Dragonfly",
+    ["🏜️ Oasis Egg"] = "Fennec Fox",
+    ["🐝 Bee Egg"] = "Queen Bee",
+    ["🌙 Night Egg"] = "Raccoon",
+    ["🚫🐝 Anti-Bee Egg"] = "Disco Bee"
 }
 
--- Egg image asset IDs (replace with real IDs!)
-local eggImages = {
-    ["Mythical Egg"] = "rbxassetid://1234567890",
-    ["Rare Summer Egg"] = "rbxassetid://1234567891",
-    ["Common Egg"] = "rbxassetid://1234567892",
-    ["Common Summer Egg"] = "rbxassetid://1234567893",
-    ["Mythical Summer Egg"] = "rbxassetid://1234567894",
-    ["Bee Egg"] = "rbxassetid://1234567895",
-    ["Bug Egg"] = "rbxassetid://1234567896",
-    ["Oasis Egg"] = "rbxassetid://1234567897"
-}
-
-local selectedEgg = "Common Egg"
+local selectedEgg = "🐛 Bug Egg"
 local countdown = 5
 local autoRandomize = true
 local autoStop = false
 
--- GUI Setup
+-- GUI setup
 local gui = Instance.new("ScreenGui", playerGui)
 gui.Name = "EggPetRandomizer"
 gui.ResetOnSpawn = false
 
--- Draggable Main Frame
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 600, 0, 250)
-frame.Position = UDim2.new(0.5, -300, 0.5, -125)
+frame.Size = UDim2.new(0, 650, 0, 300)
+frame.Position = UDim2.new(0.5, -325, 0.5, -150)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 frame.BorderSizePixel = 0
 frame.Active = true
@@ -70,7 +58,7 @@ title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
 title.TextScaled = true
 
--- Pet Display
+-- Pet output
 local petDisplay = Instance.new("TextLabel", frame)
 petDisplay.Position = UDim2.new(0, 10, 0, 40)
 petDisplay.Size = UDim2.new(1, -20, 0, 50)
@@ -80,83 +68,112 @@ petDisplay.TextColor3 = Color3.new(1, 1, 1)
 petDisplay.Font = Enum.Font.GothamBold
 petDisplay.TextScaled = true
 
--- Timer Label
+-- Timer label
 local timerLabel = Instance.new("TextLabel", frame)
 timerLabel.Position = UDim2.new(0, 10, 0, 100)
-timerLabel.Size = UDim2.new(0.5, -20, 0, 30)
+timerLabel.Size = UDim2.new(0.45, -10, 0, 30)
 timerLabel.Text = "Timer: " .. countdown .. "s"
-timerLabel.BackgroundTransparency = 1
 timerLabel.TextColor3 = Color3.new(1, 1, 1)
+timerLabel.BackgroundTransparency = 1
 timerLabel.Font = Enum.Font.Gotham
 timerLabel.TextScaled = true
 
--- Timer Increase Button
+-- Increase timer button
 local timerBtn = Instance.new("TextButton", frame)
 timerBtn.Position = UDim2.new(0.5, 0, 0, 100)
 timerBtn.Size = UDim2.new(0.5, -10, 0, 30)
-timerBtn.Text = "Increase Time"
+timerBtn.Text = "⏫ Increase Timer"
 timerBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 timerBtn.TextColor3 = Color3.new(1, 1, 1)
 timerBtn.Font = Enum.Font.Gotham
 timerBtn.TextScaled = true
 timerBtn.MouseButton1Click:Connect(function()
-    countdown += 1
-    timerLabel.Text = "Timer: " .. countdown .. "s"
+	countdown += 1
+	timerLabel.Text = "Timer: " .. countdown .. "s"
 end)
 
--- Egg Selector
+-- Auto toggle
+local autoBtn = Instance.new("TextButton", frame)
+autoBtn.Position = UDim2.new(0, 10, 0, 140)
+autoBtn.Size = UDim2.new(0.3, -10, 0, 30)
+autoBtn.Text = "Auto: ON"
+autoBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+autoBtn.TextColor3 = Color3.new(1, 1, 1)
+autoBtn.Font = Enum.Font.Gotham
+autoBtn.TextScaled = true
+autoBtn.MouseButton1Click:Connect(function()
+	autoRandomize = not autoRandomize
+	autoBtn.Text = "Auto: " .. (autoRandomize and "ON" or "OFF")
+end)
+
+-- Auto Stop toggle
+local stopBtn = Instance.new("TextButton", frame)
+stopBtn.Position = UDim2.new(0.35, 0, 0, 140)
+stopBtn.Size = UDim2.new(0.3, -10, 0, 30)
+stopBtn.Text = "Auto Stop: OFF"
+stopBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+stopBtn.TextColor3 = Color3.new(1, 1, 1)
+stopBtn.Font = Enum.Font.Gotham
+stopBtn.TextScaled = true
+stopBtn.MouseButton1Click:Connect(function()
+	autoStop = not autoStop
+	stopBtn.Text = "Auto Stop: " .. (autoStop and "ON" or "OFF")
+end)
+
+-- Scrollable egg selector
 local scroll = Instance.new("ScrollingFrame", frame)
-scroll.Position = UDim2.new(0, 10, 0, 140)
-scroll.Size = UDim2.new(1, -20, 0, 100)
-scroll.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-scroll.CanvasSize = UDim2.new(0, #eggs * 110, 0, 0)
+scroll.Position = UDim2.new(0, 10, 0, 180)
+scroll.Size = UDim2.new(1, -20, 0, 110)
+scroll.CanvasSize = UDim2.new(0, #eggs * 130, 0, 0)
 scroll.ScrollBarThickness = 6
+scroll.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 scroll.ScrollingDirection = Enum.ScrollingDirection.X
 
--- Egg Buttons with Images
 local x = 0
-for name, _ in pairs(eggs) do
-    local eggBtn = Instance.new("ImageButton", scroll)
-    eggBtn.Position = UDim2.new(0, x, 0, 0)
-    eggBtn.Size = UDim2.new(0, 100, 0, 100)
-    eggBtn.Name = name
-    eggBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    eggBtn.Image = eggImages[name] or ""
-    
-    local lbl = Instance.new("TextLabel", eggBtn)
-    lbl.Size = UDim2.new(1, 0, 0, 20)
-    lbl.Position = UDim2.new(0, 0, 1, -20)
-    lbl.BackgroundTransparency = 1
-    lbl.Text = name
-    lbl.TextColor3 = Color3.new(1, 1, 1)
-    lbl.Font = Enum.Font.Gotham
-    lbl.TextScaled = true
-    
-    eggBtn.MouseButton1Click:Connect(function()
-        selectedEgg = name
-    end)
-    x += 110
+for eggName, _ in pairs(eggs) do
+	local eggBtn = Instance.new("TextButton", scroll)
+	eggBtn.Position = UDim2.new(0, x, 0, 0)
+	eggBtn.Size = UDim2.new(0, 120, 0, 100)
+	eggBtn.Text = eggName
+	eggBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+	eggBtn.TextColor3 = Color3.new(1, 1, 1)
+	eggBtn.Font = Enum.Font.Gotham
+	eggBtn.TextScaled = true
+	eggBtn.MouseButton1Click:Connect(function()
+		selectedEgg = eggName
+	end)
+	x += 130
 end
 
--- Pet Randomizer Loop
+-- Timer auto increase
 task.spawn(function()
-    while true do
-        if autoRandomize then
-            local pets = eggs[selectedEgg] or {}
-            local picked = "???"
-            
-            -- Rare pet logic
-            if rarePets[selectedEgg] and countdown >= 10 then
-                picked = rarePets[selectedEgg]
-                petDisplay.TextColor3 = Color3.fromRGB(255, 215, 0)
-            elseif #pets > 0 then
-                picked = pets[math.random(1, #pets)]
-                petDisplay.TextColor3 = Color3.new(1, 1, 1)
-            end
-            
-            petDisplay.Text = "Random Pet: " .. picked
-            if autoStop then autoRandomize = false end
-        end
-        wait(countdown)
-    end
+	while true do
+		wait(1)
+		countdown += 1
+		timerLabel.Text = "Timer: " .. countdown .. "s"
+	end
+end)
+
+-- Pet randomization loop
+task.spawn(function()
+	while true do
+		if autoRandomize then
+			local pets = eggs[selectedEgg] or {}
+			local chosen = "???"
+			local isRare = false
+
+			if rarePets[selectedEgg] and countdown >= 10 then
+				chosen = rarePets[selectedEgg]
+				isRare = true
+			elseif #pets > 0 then
+				chosen = pets[math.random(1, #pets)]
+			end
+
+			petDisplay.Text = "Random Pet: " .. chosen
+			petDisplay.TextColor3 = isRare and Color3.fromRGB(255, 215, 0) or Color3.new(1, 1, 1)
+
+			if autoStop then autoRandomize = false end
+		end
+		wait(countdown)
+	end
 end)
