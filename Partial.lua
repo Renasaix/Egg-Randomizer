@@ -1,4 +1,4 @@
--- Egg ESP Script for Grow a Garden
+-- Egg ESP Script (Updated for actual PetEgg structure)
 local eggs = {
     ["🥚 Common Egg"] = {"Dog", "Bunny", "Golden Lab"},
     ["🥕 Uncommon Egg"] = {"Black Bunny", "Chicken", "Cat", "Deer"},
@@ -17,53 +17,55 @@ local eggs = {
     ["🧬 Primal Egg"] = {"Parasaurolophus", "Iguanodon", "Pachycephalosaurus", "Dilophosaurus", "Ankylosaurus", "Spinosaurus"}
 }
 
+-- Get all PetEgg BaseParts inside game
 local eggFolder = workspace:FindFirstChild("Farm")
-if eggFolder then
-    eggFolder = eggFolder:FindFirstChild("Farm")
-        and eggFolder.Farm:FindFirstChild("Important")
-        and eggFolder.Farm.Important:FindFirstChild("Objects_Physical")
+if eggFolder and eggFolder:FindFirstChild("Farm") and eggFolder.Farm:FindFirstChild("Important") then
+    eggFolder = eggFolder.Farm.Important:FindFirstChild("Objects_Physical")
 else
-    warn("❌ Could not find the egg folder path.")
+    warn("❌ Could not find proper egg folder path.")
     return
 end
 
-for _, model in pairs(eggFolder:GetDescendants()) do
-    if model:IsA("Model") and model:FindFirstChild("PetEgg") then
-        local eggPart = model:FindFirstChild("PetEgg")
-        if eggPart and eggPart:IsA("BasePart") then
-            local eggName = model.Name
-            for fullName, pets in pairs(eggs) do
-                if eggName:lower():find(fullName:match("Egg") and "egg") then
-                    local randomPet = pets[math.random(1, #pets)]
+for _, obj in pairs(eggFolder:GetDescendants()) do
+    if obj:IsA("BasePart") and obj.Name == "PetEgg" then
+        local model = obj:FindFirstAncestorOfClass("Model")
+        if model then
+            local matchedName = nil
+            for eggName, pets in pairs(eggs) do
+                local cleanName = eggName:lower():gsub("🥚", ""):gsub("[^%w%s]", ""):gsub("egg", ""):gsub("%s+", "") -- remove emojis and spaces
+                local modelName = model.Name:lower():gsub("egg", ""):gsub("%s+", "")
+                if modelName:find(cleanName) then
+                    matchedName = eggName
+                    local petList = pets
+                    local petName = petList[math.random(1, #petList)]
 
-                    -- Billboard UI
+                    -- Create GUI
                     local billboard = Instance.new("BillboardGui")
-                    billboard.Size = UDim2.new(0, 200, 0, 60)
-                    billboard.AlwaysOnTop = true
-                    billboard.Adornee = eggPart
                     billboard.Name = "EggESP"
+                    billboard.Adornee = obj
+                    billboard.Size = UDim2.new(0, 200, 0, 50)
                     billboard.StudsOffset = Vector3.new(0, 3, 0)
-                    billboard.Parent = eggPart
+                    billboard.AlwaysOnTop = true
+                    billboard.Parent = obj
 
-                    -- Text Label
-                    local label = Instance.new("TextLabel")
-                    label.Size = UDim2.new(1, 0, 1, 0)
-                    label.BackgroundTransparency = 1
-                    label.TextColor3 = Color3.new(1, 1, 1)
-                    label.TextStrokeTransparency = 0.5
-                    label.TextScaled = true
-                    label.Font = Enum.Font.GothamBold
-                    label.Text = fullName .. "\n🔄 " .. randomPet
-                    label.Parent = billboard
+                    local textLabel = Instance.new("TextLabel")
+                    textLabel.Size = UDim2.new(1, 0, 1, 0)
+                    textLabel.BackgroundTransparency = 1
+                    textLabel.TextScaled = true
+                    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    textLabel.TextStrokeTransparency = 0.5
+                    textLabel.Font = Enum.Font.GothamBold
+                    textLabel.Text = matchedName .. "\n🔄 " .. petName
+                    textLabel.Parent = billboard
 
-                    -- Timer to reroll every 10s, reset every 15s
+                    -- Timer to reroll pet every 10s, reset every 15s
                     task.spawn(function()
                         local countdown = 15
                         while true do
                             if countdown <= 0 then
                                 countdown = 15
-                                randomPet = pets[math.random(1, #pets)]
-                                label.Text = fullName .. "\n🔄 " .. randomPet
+                                petName = petList[math.random(1, #petList)]
+                                textLabel.Text = matchedName .. "\n🔄 " .. petName
                             end
                             countdown -= 1
                             wait(1)
