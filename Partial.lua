@@ -1,5 +1,5 @@
-local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
+local eggsFolder = workspace:WaitForChild("eggs")
 
 -- Egg definitions
 local eggs = {
