@@ -14,10 +14,9 @@ local eggs = {
     ["🌴 Paradise Egg"] = {"Ostrich", "Peacock", "Capybara", "Scarlet Macaw", "Mimic Octopus"},
     ["🌼 Oasis Egg"] = {"Meerkat", "Sand Snake", "Axolotl", "Hyacinth Macaw", "Fennec Fox"},
     ["🐝 Bee Egg"] = {"Bee", "Drone Bee", "Queen Bee"},
-    ["🔥 Mythical Summer Egg"] = {"Red Fox", "Golden Deer", "Mimic Octopus"},
-    ["🌙 Night Egg"] = {"Bat", "Night Owl", "Moth", "Raccoon"},
-    ["🚫🐝 Anti-Bee Egg"] = {"Dust Bee", "Angry Bee", "Robot Bee", "Disco Bee"},
-    ["🦖 Dino Egg"] = {"Triceratops", "Raptor", "Pterodactyl", "Brontosaurus", "Stegosaurus", "T-Rex"},
+    ["🌙 Night Egg"] = {"Hedgehog", "Frog", "Echo Frog", "Night Owl", "Raccoon"},
+    ["🚫🐝 Anti-Bee Egg"] = {"Wasp", "Tarantula Hawk", "Moth", "Butterfly", "Disco Bee"},
+    ["🦖 Dinosaur Egg"] = {"Raptor", "Triceratops", "Stegosaurus", "Pterodactyl", "Brontosaurus", "T-Rex"},
     ["🧬 Primal Egg"] = {"Parasaurolophus", "Iguanodon", "Pachycephalosaurus", "Dilophosaurus", "Ankylosaurus", "Spinosaurus"}
 }
 
@@ -31,7 +30,8 @@ local rarePets = {
     ["🌙 Night Egg"] = "Raccoon",
     ["🚫🐝 Anti-Bee Egg"] = "Disco Bee",
     ["🦖 Dino Egg"] = "T-Rex",
-    ["🧬 Primal Egg"] = "Spinosaurus"
+    ["🧬 Primal Egg"] = "Spinosaurus",
+    ["🌴 Paradise Egg"] = "Mimic Octopus" 
 }
 
 -- Store label data
@@ -49,7 +49,7 @@ end
 
 -- Create label above egg
 local function createEggLabel(eggModel, eggKey)
-    if not eggModel:FindFirstChild("Head") and not eggModel:IsA("Model") then return end
+    if not eggModel:IsA("Model") and not eggModel:IsA("BasePart") then return end
 
     local attachmentPart = eggModel:FindFirstChild("Head") or eggModel:FindFirstChildWhichIsA("BasePart")
     if not attachmentPart then return end
@@ -62,7 +62,7 @@ local function createEggLabel(eggModel, eggKey)
     billboard.Adornee = attachmentPart
     billboard.Parent = eggModel
 
-    local title = Instance.new("TextLabel", billboard)
+    local title = Instance.new("TextLabel")
     title.Name = "EggTitle"
     title.Size = UDim2.new(1, 0, 0.5, 0)
     title.Position = UDim2.new(0, 0, 0, 0)
@@ -72,8 +72,9 @@ local function createEggLabel(eggModel, eggKey)
     title.TextStrokeTransparency = 0.6
     title.Font = Enum.Font.GothamBold
     title.TextScaled = true
+    title.Parent = billboard
 
-    local petLabel = Instance.new("TextLabel", billboard)
+    local petLabel = Instance.new("TextLabel")
     petLabel.Name = "PetName"
     petLabel.Size = UDim2.new(1, 0, 0.5, 0)
     petLabel.Position = UDim2.new(0, 0, 0.5, 0)
@@ -82,6 +83,7 @@ local function createEggLabel(eggModel, eggKey)
     petLabel.TextColor3 = Color3.new(1, 1, 1)
     petLabel.Font = Enum.Font.Gotham
     petLabel.TextScaled = true
+    petLabel.Parent = billboard
 
     labelData[eggModel] = {
         eggKey = eggKey,
@@ -90,12 +92,12 @@ local function createEggLabel(eggModel, eggKey)
     }
 end
 
--- Scan all egg models in workspace
-for _, egg in pairs(Workspace:GetDescendants()) do
-    if egg:IsA("Model") or egg:IsA("Part") then
-        local eggKey = getEggKeyFromModel(egg.Name)
-        if eggKey and not egg:FindFirstChild("EggESP") then
-            createEggLabel(egg, eggKey)
+-- Initial scan for eggs
+for _, obj in ipairs(Workspace:GetDescendants()) do
+    if obj:IsA("Model") or obj:IsA("BasePart") then
+        local eggKey = getEggKeyFromModel(obj.Name)
+        if eggKey and not obj:FindFirstChild("EggESP", true) then
+            createEggLabel(obj, eggKey)
         end
     end
 end
@@ -103,15 +105,17 @@ end
 -- Update pet names every 10 seconds
 RunService.Heartbeat:Connect(function(dt)
     for eggModel, data in pairs(labelData) do
-        if eggModel and eggModel.Parent then
+        if eggModel and eggModel.Parent and data.petLabel and data.petLabel.Parent then
             data.timer = data.timer + dt
             if data.timer >= 10 then
                 data.timer = 0
                 local pets = eggs[data.eggKey]
-                local chosen = pets[math.random(1, #pets)]
-                local isRare = rarePets[data.eggKey] == chosen or (rarePets[data.eggKey] and math.random() > 0.7)
-                data.petLabel.Text = chosen
-                data.petLabel.TextColor3 = isRare and Color3.fromRGB(255, 215, 0) or Color3.new(1, 1, 1)
+                if pets and #pets > 0 then
+                    local chosen = pets[math.random(1, #pets)]
+                    local isRare = rarePets[data.eggKey] == chosen or (rarePets[data.eggKey] and math.random() > 0.7)
+                    data.petLabel.Text = chosen
+                    data.petLabel.TextColor3 = isRare and Color3.fromRGB(255, 215, 0) or Color3.new(1, 1, 1)
+                end
             end
         end
     end
