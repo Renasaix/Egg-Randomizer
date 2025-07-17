@@ -34,89 +34,66 @@ local rarePets = {
     ["🌴 Paradise Egg"] = "Mimic Octopus" 
 }
 
--- Store label data
-local labelData = {}
+-- Finds all egg models in workspace local function getEggModels() local found = {} for _, model in ipairs(Workspace:GetDescendants()) do if model:IsA("Model") and model:FindFirstChild("Main") and model.Name:match("Egg") then table.insert(found, model) end end return found end
 
--- Extract egg name from model name
-local function getEggKeyFromModel(modelName)
-    for eggKey in pairs(eggs) do
-        if modelName:match("^" .. eggKey) then
-            return eggKey
+-- Create BillboardGui on egg local function createLabel(model, eggType) if model:FindFirstChild("EggESP") then return end -- Prevent duplicates
+
+local head = model:FindFirstChild("Main")
+if not head then return end
+
+local billboard = Instance.new("BillboardGui")
+billboard.Name = "EggESP"
+billboard.Size = UDim2.new(0, 200, 0, 50)
+billboard.StudsOffset = Vector3.new(0, 3, 0)
+billboard.AlwaysOnTop = true
+billboard.Adornee = head
+billboard.Parent = model
+
+local eggName = Instance.new("TextLabel")
+eggName.Size = UDim2.new(1, 0, 0.5, 0)
+eggName.Position = UDim2.new(0, 0, 0, 0)
+eggName.BackgroundTransparency = 1
+eggName.Text = "🥚 " .. eggType
+eggName.TextColor3 = Color3.fromRGB(255, 255, 255)
+eggName.Font = Enum.Font.GothamBold
+eggName.TextScaled = true
+eggName.Parent = billboard
+
+local petLabel = Instance.new("TextLabel")
+petLabel.Name = "PetLabel"
+petLabel.Size = UDim2.new(1, 0, 0.5, 0)
+petLabel.Position = UDim2.new(0, 0, 0.5, 0)
+petLabel.BackgroundTransparency = 1
+petLabel.Text = ""
+petLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+petLabel.Font = Enum.Font.Gotham
+petLabel.TextScaled = true
+petLabel.Parent = billboard
+
+-- Randomizer coroutine
+task.spawn(function()
+    local timer = 0
+    while model.Parent do
+        task.wait(1)
+        timer += 1
+        local chosen = "???"
+        local isRare = false
+        local pets = eggs[eggType] or {}
+        if rarePets[eggType] and timer >= 10 then
+            chosen = rarePets[eggType]
+            isRare = true
+        elseif #pets > 0 then
+            chosen = pets[math.random(1, #pets)]
         end
-    end
-    return nil
-end
-
--- Create label above egg
-local function createEggLabel(eggModel, eggKey)
-    if not eggModel:IsA("Model") and not eggModel:IsA("BasePart") then return end
-
-    local attachmentPart = eggModel:FindFirstChild("Head") or eggModel:FindFirstChildWhichIsA("BasePart")
-    if not attachmentPart then return end
-
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "EggESP"
-    billboard.Size = UDim2.new(0, 200, 0, 50)
-    billboard.StudsOffset = Vector3.new(0, 3, 0)
-    billboard.AlwaysOnTop = true
-    billboard.Adornee = attachmentPart
-    billboard.Parent = eggModel
-
-    local title = Instance.new("TextLabel")
-    title.Name = "EggTitle"
-    title.Size = UDim2.new(1, 0, 0.5, 0)
-    title.Position = UDim2.new(0, 0, 0, 0)
-    title.BackgroundTransparency = 1
-    title.Text = eggKey
-    title.TextColor3 = Color3.new(1, 1, 1)
-    title.TextStrokeTransparency = 0.6
-    title.Font = Enum.Font.GothamBold
-    title.TextScaled = true
-    title.Parent = billboard
-
-    local petLabel = Instance.new("TextLabel")
-    petLabel.Name = "PetName"
-    petLabel.Size = UDim2.new(1, 0, 0.5, 0)
-    petLabel.Position = UDim2.new(0, 0, 0.5, 0)
-    petLabel.BackgroundTransparency = 1
-    petLabel.Text = "..."
-    petLabel.TextColor3 = Color3.new(1, 1, 1)
-    petLabel.Font = Enum.Font.Gotham
-    petLabel.TextScaled = true
-    petLabel.Parent = billboard
-
-    labelData[eggModel] = {
-        eggKey = eggKey,
-        petLabel = petLabel,
-        timer = 0
-    }
-end
-
--- Initial scan for eggs
-for _, obj in ipairs(Workspace:GetDescendants()) do
-    if obj:IsA("Model") or obj:IsA("BasePart") then
-        local eggKey = getEggKeyFromModel(obj.Name)
-        if eggKey and not obj:FindFirstChild("EggESP", true) then
-            createEggLabel(obj, eggKey)
-        end
-    end
-end
-
--- Update pet names every 10 seconds
-RunService.Heartbeat:Connect(function(dt)
-    for eggModel, data in pairs(labelData) do
-        if eggModel and eggModel.Parent and data.petLabel and data.petLabel.Parent then
-            data.timer = data.timer + dt
-            if data.timer >= 10 then
-                data.timer = 0
-                local pets = eggs[data.eggKey]
-                if pets and #pets > 0 then
-                    local chosen = pets[math.random(1, #pets)]
-                    local isRare = rarePets[data.eggKey] == chosen or (rarePets[data.eggKey] and math.random() > 0.7)
-                    data.petLabel.Text = chosen
-                    data.petLabel.TextColor3 = isRare and Color3.fromRGB(255, 215, 0) or Color3.new(1, 1, 1)
-                end
-            end
-        end
+        petLabel.Text = chosen
+        petLabel.TextColor3 = isRare and Color3.fromRGB(255, 215, 0) or Color3.fromRGB(200, 200, 200)
+        if timer >= 10 then timer = 0 end
     end
 end)
+
+end
+
+-- Main logic for _, 
+model in ipairs(getEggModels()) 
+do local eggNameRaw = model.Name:split("|")[1] local trimmed = eggNameRaw:gsub("%s+$", "") createLabel(model, trimmed) end
+
